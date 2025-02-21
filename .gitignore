@@ -1,0 +1,40 @@
+# --- Build and Compilation Files ---
+/build/
+*/CMakeFiles/
+/CMakeCache.txt
+/cmake-build-debug/
+/cmake-build-release/
+/bin/
+/lib/
+/obj/
+*.o
+*.a
+*.so
+*.out
+*.exe
+*.dll
+*.dylib
+*.ninja
+*.ninja_log
+
+# --- CLion and CMake Files ---
+.idea/
+.vscode/
+CMakeLists.txt.user
+
+# --- Logs and Debugging Files ---
+*.log
+*.stackdump
+*.core
+gmon.out
+
+# --- OS-Specific Files ---
+.DS_Store
+Thumbs.db
+*.swp
+
+# --- Generated Configuration Files ---
+/server.conf
+/config/*.json
+/config/*.yaml
+/config/*.ini
