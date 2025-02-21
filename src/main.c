@@ -2,17 +2,17 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include "../includes/server.h"
+#include "../src/core/config.h"
+#include <string.h>
 
 void run_server(const char *error_ptr, const char *port) {
-    Server *server = create_server(port, 2);
+    Server *server = create_server(port, MAX_CONNEXIONS);
     if (server == NULL) {
         perror(error_ptr);
         exit(EXIT_FAILURE);
     }
-    printf("Server created successfully\n");
-    printf("HTTP server is running on %s on port %d\n",
-           inet_ntoa(server->server_address.sin_addr),
-           ntohs(server->server_address.sin_port));
+
+    start_server(server);
 }
 
 

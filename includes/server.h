@@ -5,6 +5,8 @@
 #ifndef SERVER_H
 #define SERVER_H
 #include <netinet/in.h>
+#include <unistd.h>
+
 
 #define DEFAULT_PORT 5400
 
@@ -19,8 +21,8 @@ Server *create_server(const char* port, int max_connections);
 int validate_server_port(const char *server_port);
 
 // TODO: To be implimented later //
-int start_server(Server *server);
-int stop_server(Server *server);
+void start_server(Server *server);
+void stop_server(Server *server);
 
 
 #endif //SERVER_H
