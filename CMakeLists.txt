@@ -16,7 +16,9 @@ add_executable(http_server ${SOURCES}
         includes/server.h
         src/core/config.h
         src/handlers/client_request_handler.c
-        includes/client_request_handler.h)
+        includes/client_request_handler.h
+        src/http/http_request_parser.c
+        includes/http_request_parser.h)
 
 add_custom_command(
         TARGET http_server POST_BUILD
