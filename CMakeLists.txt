@@ -11,7 +11,10 @@ include_directories(includes)
 
 file(GLOB SOURCES "src/*.c")
 
-add_executable(http_server ${SOURCES})
+add_executable(http_server ${SOURCES}
+        src/core/server.c
+        includes/server.h
+        src/core/config.h)
 
 add_custom_command(
         TARGET http_server POST_BUILD

@@ -1,6 +1,29 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <arpa/inet.h>
+#include "../includes/server.h"
 
-int main(void) {
-    printf("Hello, World!\n");
-    return 0;
+void run_server(const char *error_ptr, const char *port) {
+    Server *server = create_server(port, 2);
+    if (server == NULL) {
+        perror(error_ptr);
+        exit(EXIT_FAILURE);
+    }
+    printf("Server created successfully\n");
+    printf("HTTP server is running on %s on port %d\n",
+           inet_ntoa(server->server_address.sin_addr),
+           ntohs(server->server_address.sin_port));
 }
+
+
+int main(int argc, const char *argv[]) {
+     char *error_ptr = NULL;
+    const char *port = "5400";
+
+    if (argc > 1) {
+        port = argv[1];
+    }
+    run_server(error_ptr, port);
+    return EXIT_SUCCESS;
+}
+
