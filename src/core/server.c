@@ -93,7 +93,7 @@ void accept_connection(const Server *server) {
                 continue;
             }
         }
-        handel_client_request(client, client_addr);
+        handle_client_request(client, client_addr);
     }
 }
 

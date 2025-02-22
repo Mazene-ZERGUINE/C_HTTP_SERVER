@@ -13,7 +13,7 @@
 
 #include "../includes/http_request_parser.h"
 
-void handel_client_request(int client_file_descriptor, struct sockaddr_in client_address) {
+void handle_client_request(int client_file_descriptor, struct sockaddr_in client_address) {
     if (client_file_descriptor < 0) {
         fprintf(stderr, "Failed to accept client connection \n");
     }
