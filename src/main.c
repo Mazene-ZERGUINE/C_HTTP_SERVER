@@ -17,7 +17,7 @@ void run_server(const char *error_ptr, const char *port) {
 
 
 int main(int argc, const char *argv[]) {
-     char *error_ptr = NULL;
+    char *error_ptr = NULL;
     const char *port = "5400";
 
     if (argc > 1) {
