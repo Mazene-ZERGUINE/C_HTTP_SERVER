@@ -9,6 +9,9 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <sys/errno.h>
+
+#include "http-response.h"
+#include "http_response_handler.h"
 #include "../includes/memory_utils.h"
 
 #include "../includes/http_request_parser.h"
@@ -65,10 +68,12 @@ void handle_client_request(int client_file_descriptor, struct sockaddr_in client
         printf("%s : %s \n", http_request->headers[i].key, http_request->headers[i].value);
     }
     printf("]\n");
-
-
     printf("\n---------------------------\n");
 
+    printf("Sending response to %s", inet_ntoa(client_address.sin_addr));
+    char*  response_string = handel_http_response(http_request);
+    send_response(client_file_descriptor, response_string);
+
     close(client_file_descriptor);
-    free(http_request);
+    free_http_request(http_request);
 }

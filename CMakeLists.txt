@@ -23,6 +23,10 @@ add_executable(http_server ${SOURCES}
         includes/memory_utils.h
         src/utils/str_utils.c
         includes/str_utils.h
+        src/http/http-response.c
+        includes/http-response.h
+        src/handlers/http_response_handler.c
+        includes/http_response_handler.h
 )
 
 add_custom_command(
