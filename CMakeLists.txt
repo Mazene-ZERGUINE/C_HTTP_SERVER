@@ -29,6 +29,10 @@ add_executable(http_server ${SOURCES}
         includes/http_response_handler.h
         src/core/logger.c
         includes/logger.h
+        src/handlers/static_serving_handler.c
+        includes/static_serving_handler.h
+        src/core/app_config.c
+        includes/app_config.h
 )
 
 add_custom_command(

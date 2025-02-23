@@ -39,6 +39,8 @@ Server *create_server(const char *port, int max_connections) {
     server->server_address.sin_port = htons(server_port);
     server->server_address.sin_addr.s_addr = inet_addr(DEFAULT_IP);
 
+    AppConfig* app_config = app_config_init();
+    server->app_config = app_config;
     return server;
 }
 
@@ -78,6 +80,10 @@ void start_server(Server *server) {
     log_info("Server is running on %s and listing on port %d", inet_ntoa(server->server_address.sin_addr),
              ntohs(server->server_address.sin_port));
 
+    log_info("Running application %s Version %s", server->app_config->app_name, server->app_config->app_version);
+    log_info("Application Path %s", server->app_config->app_resources_path);
+    log_info("Debug Mode enabled %d", server->app_config->debug_mode);
+
     // Sets the server in non-blocking accept mode
     fcntl(server->server_file_descriptor, F_SETFL, O_NONBLOCK);
     accept_connection(server);
@@ -98,7 +104,7 @@ void accept_connection(const Server *server) {
                 continue;
             }
         }
-        handle_client_request(client, client_addr);
+        handle_client_request(client, client_addr, server);
     }
 }
 

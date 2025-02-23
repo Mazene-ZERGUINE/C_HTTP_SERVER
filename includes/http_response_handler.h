@@ -2,8 +2,9 @@
 #define HTTP_RESPONSE_HANDLER_H
 
 #include "http-response.h"
+#include "server.h"
 
-char* handel_http_response(const HttpRequest *http_request);
-void send_response(int file_descriptor, char* response_string);
+HttpResponse* handel_http_response(const HttpRequest *http_request, const Server *server, size_t *response_length, char **response_body);
+void send_response(int file_descriptor, const char *headers, const char *body, size_t body_length);
 
 #endif //HTTP_RESPONSE_HANDLER_H

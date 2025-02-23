@@ -11,6 +11,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 #include <netinet/in.h>
+#include "app_config.h"
 
 /**
  * @brief Structure representing a network server.
@@ -22,6 +23,7 @@ typedef struct Server {
     int server_file_descriptor;
     int max_connections;
     struct sockaddr_in server_address;
+    AppConfig *app_config;
 } Server;
 
 /**

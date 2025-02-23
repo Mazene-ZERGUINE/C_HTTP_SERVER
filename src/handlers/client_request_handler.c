@@ -11,25 +11,22 @@
 
 #include "../includes/http_request_parser.h"
 
-void handle_client_request(int client_file_descriptor, struct sockaddr_in client_address) {
+void handle_client_request(int client_file_descriptor, struct sockaddr_in client_address, const Server* server) {
     if (client_file_descriptor < 0) {
-        log_warn("Failed to accept client connection form client", inet_ntoa(client_address.sin_addr));
+        log_warn("Failed to accept client connection from client %s", inet_ntoa(client_address.sin_addr));
     }
 
     log_info("Connection established from client");
-    log_info("Client IP: %s \n", inet_ntoa(client_address.sin_addr));
-    log_info("Client port: %d\n", client_address.sin_port);
+    log_info("Client IP: %s", inet_ntoa(client_address.sin_addr));
+    log_info("Client port: %d", client_address.sin_port);
 
-    // Allocating buffer to read request initial request with initial size of 4kb
     char *buffer = malloc(BUFFER_SIZE);
     if (!buffer) {
-        log_error("Failed to allocate memory for buffer \n");
-        log_debug("Failed to allocate memory for buffer handel_client_request()");
+        log_error("Failed to allocate memory for buffer");
         close(client_file_descriptor);
         return;
     }
 
-    // reading the request raw string and reallocating buffer size dynamically if needed
     ssize_t bytes_received = recv(client_file_descriptor, buffer, BUFFER_SIZE - 1, 0);
     if (bytes_received > BUFFER_SIZE - 1) {
         realloc_buffer(&buffer, bytes_received);
@@ -38,18 +35,20 @@ void handle_client_request(int client_file_descriptor, struct sockaddr_in client
     if (bytes_received < 0) {
         log_info("Error receiving data from client %s", inet_ntoa(client_address.sin_addr));
         close(client_file_descriptor);
+        free(buffer);
         return;
     } else if (bytes_received == 0) {
         log_info("Client %s disconnected", inet_ntoa(client_address.sin_addr));
         close(client_file_descriptor);
+        free(buffer);
         return;
     }
 
-
     HttpRequest *http_request = parse_http_request(buffer);
+    free(buffer);  // ✅ Free buffer after parsing
+
     if (http_request == NULL) {
-        log_error("Failed to parse HTTP request.\n");
-        log_debug("Raw HTTP request", buffer);
+        log_error("Failed to parse HTTP request.");
         close(client_file_descriptor);
         return;
     }
@@ -59,9 +58,16 @@ void handle_client_request(int client_file_descriptor, struct sockaddr_in client
     log_request(http_request);
 
     log_debug("Sending response to %s", inet_ntoa(client_address.sin_addr));
-    char*  response_string = handel_http_response(http_request);
-    send_response(client_file_descriptor, response_string);
 
-    close(client_file_descriptor);
-    free_http_request(http_request);
+    size_t response_length;
+    char *response_body;
+    HttpResponse *http_response = handel_http_response(http_request, server, &response_length, &response_body);
+
+    char *response_headers = http_response_to_string(http_response);
+
+    send_response(client_file_descriptor, response_headers, response_body, response_length);
+
+    free_http_response(http_response);
+    free(response_headers);
+    free(response_body);
 }
