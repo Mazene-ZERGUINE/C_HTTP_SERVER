@@ -27,6 +27,8 @@ add_executable(http_server ${SOURCES}
         includes/http-response.h
         src/handlers/http_response_handler.c
         includes/http_response_handler.h
+        src/core/logger.c
+        includes/logger.h
 )
 
 add_custom_command(

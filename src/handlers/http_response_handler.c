@@ -1,6 +1,6 @@
 #include "../../includes/http_response_handler.h"
-
 #include <sys/socket.h>
+#include "logger.h"
 
 char* handel_http_response(const HttpRequest *http_request) {
 
@@ -14,8 +14,10 @@ char* handel_http_response(const HttpRequest *http_request) {
     }
 
     char* response_string = http_response_to_string(http_response);
-    free_http_response(http_response);
 
+    log_response(http_response);
+
+    free_http_response(http_response);
     return response_string;
 }
 

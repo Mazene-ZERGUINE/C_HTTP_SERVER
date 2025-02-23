@@ -13,13 +13,15 @@
 #include "config.h"
 #include <fcntl.h>
 #include <unistd.h>
+#include "logger.h"
 
 Server *create_server(const char *port, int max_connections) {
     int server_port = validate_server_port(port);
     Server *server = malloc(sizeof(Server));
 
     if (!server) {
-        perror("Failed to allocate memory for server");
+        log_error("Server could not be started ", "Failed to allocate memory to the server");
+        log_debug("Error allocating memory <create_server()> line 24", "server.c");
         exit(EXIT_FAILURE);
     }
 
@@ -27,7 +29,8 @@ Server *create_server(const char *port, int max_connections) {
     server->max_connections = max_connections;
     server->server_file_descriptor = socket(AF_INET, SOCK_STREAM, 0);
     if (server->server_file_descriptor < 0) {
-        perror("Failed to create server socket");
+        log_error("Server could not be started ", "Failed to connect to socket");
+        log_debug("Error allocating memory <create_server() line 33>", "server.c");
         free(server);
         exit(EXIT_FAILURE);
     }
@@ -41,7 +44,7 @@ Server *create_server(const char *port, int max_connections) {
 
 int validate_server_port(const char *server_port) {
     if (server_port == NULL) {
-        fprintf(stderr, "No port specified. Using default port %d.\n", DEFAULT_PORT);
+        log_info("No port specified. Using default port %d.\n", DEFAULT_PORT);
         return (int) DEFAULT_PORT;
     }
 
@@ -50,7 +53,7 @@ int validate_server_port(const char *server_port) {
     long port = strtol(server_port, &enp_ptr, 10);
 
     if (errno != 0 || *enp_ptr != '\0' || port <= 0 || port > 65535) {
-        fprintf(stderr, "Invalid port number: %s. Using default port %d.\n", server_port, DEFAULT_PORT);
+        log_warn("Invalid port number: %s. Using default port %d.\n", server_port, DEFAULT_PORT);
         return (int) DEFAULT_PORT;
     }
     return (int) port;
@@ -58,20 +61,22 @@ int validate_server_port(const char *server_port) {
 
 void start_server(Server *server) {
     // binds the server to the selected port or 5400 by default
-    if (bind(server->server_file_descriptor, (struct sockaddr*)&server->server_address, sizeof(server->server_address)) < 0) {
-        fprintf(stderr, "Failed to bind server socket to port %d.\n", server->server_port);
+    if (bind(server->server_file_descriptor, (struct sockaddr *) &server->server_address,
+             sizeof(server->server_address)) < 0) {
+        log_error("Failed to bind server socket to port %d.\n", server->server_port);
+        log_debug("Error while binding socket to port <start_server() line 66>", "server.c");
         exit(EXIT_FAILURE);
     }
 
     // listens to all connections on the server port
     if (listen(server->server_file_descriptor, server->max_connections) < 0) {
-        fprintf(stderr, "Failed to listen on port %d.\n", server->server_port);
+        log_error("Failed to listen on port %d.\n", server->server_port);
+        log_debug("Error while listening to connections <start_server() line 73>", "server.c");
         exit(EXIT_FAILURE);
     }
-    printf("Server  successfully started\n");
-    printf("server is running on %s on port %d\n",
-           inet_ntoa(server->server_address.sin_addr),
-           ntohs(server->server_address.sin_port));
+    log_info("Serve started successfully");
+    log_info("Server is running on %s and listing on port %d", inet_ntoa(server->server_address.sin_addr),
+             ntohs(server->server_address.sin_port));
 
     // Sets the server in non-blocking accept mode
     fcntl(server->server_file_descriptor, F_SETFL, O_NONBLOCK);
@@ -82,14 +87,14 @@ void accept_connection(const Server *server) {
     while (1) {
         struct sockaddr_in client_addr;
         socklen_t client_len = sizeof(client_addr);
-        int client = accept(server->server_file_descriptor, (struct sockaddr*)&client_addr, &client_len);
+        int client = accept(server->server_file_descriptor, (struct sockaddr *) &client_addr, &client_len);
         if (client < 0) {
             if (errno == EWOULDBLOCK || errno == EAGAIN) {
                 // No client is waiting, so avoid looping too fast
                 usleep(10000); // Sleep for 10ms before trying again
                 continue;
             } else {
-                perror("accept failed");
+                log_warn("Failed to accept client connection");
                 continue;
             }
         }
@@ -101,5 +106,5 @@ void stop_server(Server *server) {
     if (!server) return;
     close(server->server_file_descriptor);
     free(server);
-    printf("Server stopped.\n");
+    log_warn("Server stopped successfully");
 }

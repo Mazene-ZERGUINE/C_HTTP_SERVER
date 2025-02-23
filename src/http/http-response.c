@@ -6,10 +6,12 @@
 
 #include <stdio.h>
 
+#include "logger.h"
+
 HttpResponse* http_response_new(void) {
     HttpResponse* response = (HttpResponse*)malloc(sizeof(HttpResponse));
     if (response == NULL) {
-        fprintf(stderr, "Error allocating memory for HttpResponse\n");
+        log_error("Error allocating memory for HttpResponse\n");
         return NULL;
     }
 
@@ -39,7 +41,7 @@ void build_http_response(HttpResponse* http_response, int status_code, const cha
 void add_http_response_header(HttpResponse* http_response, const char* key, const char* value) {
     http_response->headers = realloc(http_response->headers, sizeof(HttpHeader) * (http_response->header_count + 1));
     if (!http_response->headers) {
-        perror("Failed to allocate memory for headers");
+        log_error("Failed to allocate memory for headers");
         return;
     }
 
@@ -96,7 +98,7 @@ const char* get_http_reason_phrase(int status_code) {
 }
 
 int get_http_status_code_from_phrase(const char* reason_phrase) {
-    if (!reason_phrase) return -1; // Invalid input
+    if (!reason_phrase) return -1;
 
     size_t status_count = sizeof(HTTP_STATUS_LIST) / sizeof(HttpStatus);
     for (size_t i = 0; i < status_count; i++) {
@@ -104,5 +106,5 @@ int get_http_status_code_from_phrase(const char* reason_phrase) {
             return HTTP_STATUS_LIST[i].status_code;
         }
     }
-    return -1; // Unknown phrase
+    return -1;
 }
