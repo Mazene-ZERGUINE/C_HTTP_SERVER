@@ -2,22 +2,21 @@
 
 #include "server.h"
 
-#include <sys/stat.h>  // For checking file modification time
+#include <sys/stat.h>
 
 void load_routes(const Server *server) {
-    static time_t last_modified = 0;  // ✅ Track last modified timestamp
+    static time_t last_modified = 0;
     struct stat file_stat;
 
     char *routes_file_path = strdup(server->app_config->app_resources_path);
     strcat(routes_file_path, "/app.routes.json");
 
-    // ✅ Check last modification time
     if (stat(routes_file_path, &file_stat) == 0) {
         if (file_stat.st_mtime <= last_modified) {
             free(routes_file_path);
-            return;  // ✅ No changes detected, skip reload
+            return;
         }
-        last_modified = file_stat.st_mtime;  // ✅ Update last modified time
+        last_modified = file_stat.st_mtime;
     } else {
         log_error("Failed to access app.routes.json. Server shutdown...");
         free(routes_file_path);
@@ -79,7 +78,6 @@ void parse_routes(const char *json_str) {
     cJSON_ArrayForEach(route, json) {
         if (index >= INITIAL_ROUTES_SIZE) break;
 
-        // ✅ Ensure "path" and "view" keys exist before using them
         cJSON *path_item = cJSON_GetObjectItem(route, "path");
         cJSON *view_item = cJSON_GetObjectItem(route, "view");
 
@@ -124,7 +122,6 @@ void parse_routes(const char *json_str) {
             cJSON_ArrayForEach(child, children) {
                 if (child_index >= INITIAL_ROUTES_SIZE) break;
 
-                // ✅ Ensure "path" and "view" exist in child
                 cJSON *child_path_item = cJSON_GetObjectItem(child, "path");
                 cJSON *child_view_item = cJSON_GetObjectItem(child, "view");
 
