@@ -2,28 +2,34 @@
 
 #include "server.h"
 
+#include <sys/stat.h>  // For checking file modification time
+
 void load_routes(const Server *server) {
+    static time_t last_modified = 0;  // ✅ Track last modified timestamp
+    struct stat file_stat;
+
     char *routes_file_path = strdup(server->app_config->app_resources_path);
-    if (!routes_file_path) {
-        log_error("Memory allocation failed for routes file path");
-        return;
-    }
-    const char *file_name = "/app.routes.json";
+    strcat(routes_file_path, "/app.routes.json");
 
-    char *new_path = realloc(routes_file_path, strlen(routes_file_path) + strlen(file_name) + 1);
-    if (!new_path) {
-        log_error("Memory reallocation failed for routes file path");
+    // ✅ Check last modification time
+    if (stat(routes_file_path, &file_stat) == 0) {
+        if (file_stat.st_mtime <= last_modified) {
+            free(routes_file_path);
+            return;  // ✅ No changes detected, skip reload
+        }
+        last_modified = file_stat.st_mtime;  // ✅ Update last modified time
+    } else {
+        log_error("Failed to access app.routes.json. Server shutdown...");
         free(routes_file_path);
-        return;
+        exit(EXIT_FAILURE);
     }
-    routes_file_path = new_path;
 
-    strcat(routes_file_path, file_name);
+    log_info("Reloading routes from file...");
 
     FILE *file = fopen(routes_file_path, "r");
     if (!file) {
-        log_error("app.routes.json not found. Routing file must be at the root level of your app.");
-        log_error("Server shutdown ....");
+        log_error("app.routes.json not found. Server shutdown...");
+        free(routes_file_path);
         exit(EXIT_FAILURE);
     }
 
@@ -31,19 +37,16 @@ void load_routes(const Server *server) {
     long file_size = ftell(file);
     rewind(file);
 
-    char *json_str = (char *)malloc(file_size + 1);
-    if (!json_str) {
-        log_error("Memory allocation failed for JSON buffer.");
-        fclose(file);
-        return;
-    }
-
+    char *json_str = malloc(file_size + 1);
     fread(json_str, 1, file_size, file);
     json_str[file_size] = '\0';
     fclose(file);
+    free(routes_file_path);
+
     parse_routes(json_str);
     free(json_str);
 }
+
 
 char *remove_trailing_slash(const char *path) {
     size_t len = strlen(path);
@@ -167,10 +170,9 @@ void parse_routes(const char *json_str) {
         routes[routes_count] = new_route;
         routes_count++;
         index++;
-    }
 
+    }
     cJSON_Delete(json);
-    log_info("Routes successfully loaded from JSON.");
 }
 
 
@@ -178,6 +180,7 @@ void parse_routes(const char *json_str) {
 char *resolve_route(const char *request_path) {
     for (int i = 0; i < routes_count; i++) {
         if (strcmp(routes[i]->path, request_path) == 0) {
+            log_debug("Route %s has been resolved.", routes[i]->path);
             return strdup(routes[i]->view);
         }
 
