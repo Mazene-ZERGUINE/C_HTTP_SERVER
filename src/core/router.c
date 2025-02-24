@@ -47,7 +47,7 @@ void load_routes(const Server *server) {
 
 char *remove_trailing_slash(const char *path) {
     size_t len = strlen(path);
-    if (len > 1 && path[len - 1] == '/') {  // Avoid removing the only slash in "/"
+    if (len > 1 && path[len - 1] == '/') {
         char *clean_path = strndup(path, len - 1);
         return clean_path;
     }
@@ -58,7 +58,7 @@ char *remove_trailing_slash(const char *path) {
 void parse_routes(const char *json_str) {
     cJSON *json = cJSON_Parse(json_str);
     if (!json) {
-        log_error("Failed to parse routes.json.");
+        log_error("Failed to parse routes.json. JSON is malformed.");
         return;
     }
 
@@ -76,6 +76,21 @@ void parse_routes(const char *json_str) {
     cJSON_ArrayForEach(route, json) {
         if (index >= INITIAL_ROUTES_SIZE) break;
 
+        // ✅ Ensure "path" and "view" keys exist before using them
+        cJSON *path_item = cJSON_GetObjectItem(route, "path");
+        cJSON *view_item = cJSON_GetObjectItem(route, "view");
+
+        if (!path_item || !cJSON_IsString(path_item)) {
+            log_error("Malformed routes.json: Missing or invalid 'path'.");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        }
+        if (!view_item || !cJSON_IsString(view_item)) {
+            log_error("Malformed routes.json: Missing or invalid 'view'.");
+            cJSON_Delete(json);
+            exit(EXIT_FAILURE);
+        }
+
         Route *new_route = (Route *)malloc(sizeof(Route));
         if (!new_route) {
             log_error("Memory allocation failed for new route.");
@@ -83,8 +98,8 @@ void parse_routes(const char *json_str) {
             return;
         }
 
-        new_route->path = remove_trailing_slash(cJSON_GetObjectItem(route, "path")->valuestring);
-        new_route->component = strdup(cJSON_GetObjectItem(route, "view")->valuestring);
+        new_route->path = remove_trailing_slash(path_item->valuestring);
+        new_route->view = strdup(view_item->valuestring);
         new_route->child_count = 0;
         new_route->children = NULL;
 
@@ -106,6 +121,21 @@ void parse_routes(const char *json_str) {
             cJSON_ArrayForEach(child, children) {
                 if (child_index >= INITIAL_ROUTES_SIZE) break;
 
+                // ✅ Ensure "path" and "view" exist in child
+                cJSON *child_path_item = cJSON_GetObjectItem(child, "path");
+                cJSON *child_view_item = cJSON_GetObjectItem(child, "view");
+
+                if (!child_path_item || !cJSON_IsString(child_path_item)) {
+                    log_error("Malformed routes.json: Missing or invalid 'path' in child route.");
+                    cJSON_Delete(json);
+                    exit(EXIT_FAILURE);
+                }
+                if (!child_view_item || !cJSON_IsString(child_view_item)) {
+                    log_error("Malformed routes.json: Missing or invalid 'view' in child route.");
+                    cJSON_Delete(json);
+                    exit(EXIT_FAILURE);
+                }
+
                 Route *child_route = (Route *)malloc(sizeof(Route));
                 if (!child_route) {
                     log_error("Memory allocation failed for child route.");
@@ -113,9 +143,9 @@ void parse_routes(const char *json_str) {
                 }
 
                 char full_child_path[256];
-                snprintf(full_child_path, sizeof(full_child_path), "%s%s", new_route->path, cJSON_GetObjectItem(child, "path")->valuestring);
+                snprintf(full_child_path, sizeof(full_child_path), "%s%s", new_route->path, child_path_item->valuestring);
                 child_route->path = strdup(full_child_path);
-                child_route->component = strdup(cJSON_GetObjectItem(child, "view")->valuestring);
+                child_route->view = strdup(child_view_item->valuestring);
                 child_route->child_count = 0;
                 child_route->children = NULL;
 
@@ -123,6 +153,15 @@ void parse_routes(const char *json_str) {
                 new_route->child_count++;
                 child_index++;
             }
+        }
+
+        if (routes_count >= INITIAL_ROUTES_SIZE) {
+            log_error("Routes array is full. Increase INITIAL_ROUTES_SIZE.");
+            free(new_route->path);
+            free(new_route->view);
+            free(new_route);
+            cJSON_Delete(json);
+            return;
         }
 
         routes[routes_count] = new_route;
@@ -135,17 +174,16 @@ void parse_routes(const char *json_str) {
 }
 
 
+
 char *resolve_route(const char *request_path) {
     for (int i = 0; i < routes_count; i++) {
         if (strcmp(routes[i]->path, request_path) == 0) {
-            return strdup(routes[i]->component);
+            return strdup(routes[i]->view);
         }
 
         for (int j = 0; j < routes[i]->child_count; j++) {
-            log_debug("Checking child route: %s", routes[i]->children[j]->path);
-
             if (strcmp(routes[i]->children[j]->path, request_path) == 0) {
-                return strdup(routes[i]->children[j]->component);
+                return strdup(routes[i]->children[j]->view);
             }
         }
     }

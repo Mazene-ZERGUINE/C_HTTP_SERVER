@@ -9,7 +9,7 @@
 
 typedef struct Route {
     char* path;
-    char *component;
+    char *view;
     struct Route **children;
     int child_count;
 } Route;
