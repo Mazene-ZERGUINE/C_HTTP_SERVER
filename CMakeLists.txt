@@ -33,6 +33,8 @@ add_executable(http_server ${SOURCES}
         includes/static_serving_handler.h
         src/core/app_config.c
         includes/app_config.h
+        src/core/router.c
+        includes/router.h
 )
 
 add_custom_command(
@@ -50,4 +52,9 @@ target_compile_options(http_server PRIVATE
 
 target_compile_options(http_server PRIVATE -Wall -Wextra -Wpedantic)
 
-target_link_libraries(http_server pthread)
+find_package(cjson REQUIRED)
+
+target_link_libraries(http_server PRIVATE pthread  cjson)
+
+
+

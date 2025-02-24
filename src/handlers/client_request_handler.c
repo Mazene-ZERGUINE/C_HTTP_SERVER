@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include "http_response_handler.h"
 #include "logger.h"
+#include "router.h"
 #include "../includes/memory_utils.h"
 
 #include "../includes/http_request_parser.h"
@@ -16,6 +17,7 @@ void handle_client_request(int client_file_descriptor, struct sockaddr_in client
     if (client_file_descriptor < 0) {
         log_warn("Failed to accept client connection from client %s", inet_ntoa(client_address.sin_addr));
     }
+    load_routes(server);
 
     log_info("Connection established from client");
     log_info("Client IP: %s", inet_ntoa(client_address.sin_addr));

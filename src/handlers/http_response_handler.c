@@ -5,78 +5,62 @@
 #include <unistd.h>
 
 #include "logger.h"
+#include "router.h"
 #include "server.h"
 #include "static_serving_handler.h"
+#include "str_utils.h"
 
-#define CONTENT_LENGTH_BUFFER 20
-
-char* size_t_to_string(size_t file_size) {
-    char *size_str = malloc(CONTENT_LENGTH_BUFFER);
-    if (!size_str) {
-        log_error("Failed to allocate memory for Content-Length");
-        return NULL;
-    }
-    snprintf(size_str, CONTENT_LENGTH_BUFFER, "%zu", file_size);
-    return size_str;
-}
 
 
 HttpResponse* handel_http_response(const HttpRequest *http_request, const Server *server, size_t *response_length, char **response_body) {
     HttpResponse *http_response = http_response_new();
+    char *mime_type;
+    size_t file_size;
 
-    if (strcmp(http_request->path, "/" ) == 0 || strcmp(http_request->path, "/index") == 0) {
-        char *mime_type;
-        size_t file_size;
-        *response_body = serve_static_file("/index.html", server->app_config, &mime_type, &file_size);
+    // 1️⃣ Try to resolve the request path using the routing system
+    char *file_path = resolve_route(http_request->path);
+    log_debug("http_response", "file_path: %s", file_path);
 
-        if (*response_body) {
-            char size_str[20];
-            snprintf(size_str, 20, "%zu", file_size);
+    // 2️⃣ If no custom route is found, fall back to default file resolution
+    if (!file_path) {
+        file_path = (strcmp(http_request->path, "/") == 0) ? "/index.html" : http_request->path;
+    }
 
-            build_http_response(http_response, 200, NULL);
-            add_http_response_header(http_response, "Content-Type", mime_type);
-            add_http_response_header(http_response, "Content-Length", size_str);
-            *response_length = file_size;
+    // 3️⃣ Fetch the requested resource file
+    *response_body = serve_static_file(file_path, server->app_config, &mime_type, &file_size);
 
-            free(mime_type);
-            return http_response;
+    if (*response_body) {
+        // 4️⃣ Calculate Content-Length
+        char size_str[CONTENT_LENGTH_BUFFER];
+        snprintf(size_str, CONTENT_LENGTH_BUFFER, "%zu", file_size);
+
+        // 5️⃣ Modify the index.html content if needed
+        if (strcmp(file_path, "/index.html") == 0) {
+            char *modified_body = replace_placeholders(*response_body, "%APP_NAME%", server->app_config->app_name);
+            char *final_body = replace_placeholders(modified_body, "%WEB_ROOT%", server->app_config->app_resources_path);
+            free(modified_body);
+            free(*response_body);
+            *response_body = final_body;
+            *response_length = strlen(final_body);
         } else {
-            *response_body = strdup("<h1>Welcome to PyServe</h1><p>Your server is running successfully!</p>");
-            *response_length = strlen(*response_body);
-            build_http_response(http_response, 200, *response_body);
-            add_http_response_header(http_response, "Content-Type", "text/html");
-
-            return http_response;
-        }
-    }
-
-    if (strncmp(http_request->path, "/public/", 8) == 0) {
-        char *mime_type;
-        size_t file_size;
-        *response_body = serve_static_file(http_request->path, server->app_config, &mime_type, &file_size);
-
-        if (*response_body) {
-            char size_str[20];
-            snprintf(size_str, 20, "%zu", file_size);
-
-            build_http_response(http_response, 200, NULL);  // ✅ No inline body
-            add_http_response_header(http_response, "Content-Type", mime_type);
-            add_http_response_header(http_response, "Content-Length", size_str);
             *response_length = file_size;
-
-            free(mime_type);
-            return http_response;
         }
-    }
 
-    *response_body = strdup("<h1>404 - Not Found</h1>");
-    *response_length = strlen(*response_body);
-    build_http_response(http_response, 404, *response_body);
-    add_http_response_header(http_response, "Content-Type", "text/html");
+        // 6️⃣ Build the HTTP response
+        build_http_response(http_response, 200, NULL);
+        add_http_response_header(http_response, "Content-Type", mime_type);
+        add_http_response_header(http_response, "Content-Length", size_str);
+        free(mime_type);
+    } else {
+        // 7️⃣ File not found, return 404 response
+        *response_body = strdup("<h1>404 Not Found</h1><p>The requested resource was not found.</p>");
+        *response_length = strlen(*response_body);
+        build_http_response(http_response, 404, *response_body);
+        add_http_response_header(http_response, "Content-Type", "text/html");
+    }
 
     return http_response;
 }
-
 
 
 void send_response(int file_descriptor, const char *headers, const char *body, size_t body_length) {
