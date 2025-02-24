@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include "client_request_handler.h"
-#include "config.h"
+#include "../../includes/config.h"
 #include <fcntl.h>
 #include <unistd.h>
 #include "logger.h"

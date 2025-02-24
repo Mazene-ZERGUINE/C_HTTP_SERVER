@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
+#define CONTENT_LENGTH_BUFFER 20
 /**
  * @file str_utils.h
  * @brief Utility functions for string processing.
@@ -24,5 +24,6 @@
  * @return A dynamically allocated string containing the extracted token. The caller must free it.
  */
 char *extract_token(const char **str, const char *delimiters);
+char* size_t_to_string(const size_t file_size);
 
 #endif // STR_UTILS_H

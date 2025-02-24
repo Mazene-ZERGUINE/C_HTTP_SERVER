@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include "../includes/server.h"
-#include "../src/core/config.h"
+#include "../includes/config.h"
 #include <string.h>
 
 void run_server(const char *error_ptr, const char *port) {

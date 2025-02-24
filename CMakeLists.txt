@@ -14,7 +14,7 @@ file(GLOB SOURCES "src/*.c")
 add_executable(http_server ${SOURCES}
         src/core/server.c
         includes/server.h
-        src/core/config.h
+        includes/config.h
         src/handlers/client_request_handler.c
         includes/client_request_handler.h
         src/http/http_request_parser.c

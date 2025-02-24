@@ -6,8 +6,6 @@
 #define DEFAULT_IP "127.0.0.1"
 #define CONFIG_FILE_PATH get_config_file_path()
 
-
-
 static inline char* get_config_file_path(void) {
     const char *home = getenv("HOME");
     if (!home) {
