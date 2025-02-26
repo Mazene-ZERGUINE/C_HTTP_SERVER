@@ -101,3 +101,7 @@ void log_response(const HttpResponse *http_response) {
 
     printf("%s\n", RESET); // Reset color
 }
+
+void log_cli_prompt(void) {
+    printf("\033[1;35mPyServe ⇒ \033[0m");
+}

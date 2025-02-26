@@ -88,4 +88,7 @@ void log_request(const HttpRequest *http_request);
  */
 void log_response(const HttpResponse *http_response);
 
+
+void log_cli_prompt(void);
+
 #endif // LOGGER_H
