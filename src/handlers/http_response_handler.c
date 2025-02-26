@@ -17,25 +17,25 @@ HttpResponse* handel_http_response(const HttpRequest *http_request, const Server
     char *mime_type;
     size_t file_size;
 
-    // 1️⃣ Try to resolve the request path using the routing system
-    char *file_path = resolve_route(http_request->path);
-    log_debug("http_response", "file_path: %s", file_path);
+    // Resolving the path using the routing system
+    char *resolved_path = resolve_route(http_request->path);
+    log_debug("http_response", "file_path: %s", resolved_path);
 
-    // 2️⃣ If no custom route is found, fall back to default file resolution
-    if (!file_path) {
-        file_path = (strcmp(http_request->path, "/") == 0) ? "/index.html" : http_request->path;
+    // default path if no resolved path is found
+    if (!resolved_path) {
+        resolved_path = (strcmp(http_request->path, "/") == 0) ? "/index.html" : http_request->path;
     }
 
-    // 3️⃣ Fetch the requested resource file
-    *response_body = serve_static_file(file_path, server->app_config, &mime_type, &file_size);
+    // fetching the request resource file
+    *response_body = serve_static_file(resolved_path, server->app_config, &mime_type, &file_size);
 
     if (*response_body) {
-        // 4️⃣ Calculate Content-Length
+        // calculating the response content-lenght
         char size_str[CONTENT_LENGTH_BUFFER];
         snprintf(size_str, CONTENT_LENGTH_BUFFER, "%zu", file_size);
 
-        // 5️⃣ Modify the index.html content if needed
-        if (strcmp(file_path, "/index.html") == 0) {
+        // default index.html settings in case
+        if (strcmp(resolved_path, "/index.html") == 0) {
             char *modified_body = replace_placeholders(*response_body, "%APP_NAME%", server->app_config->app_name);
             char *final_body = replace_placeholders(modified_body, "%WEB_ROOT%", server->app_config->app_resources_path);
             free(modified_body);
@@ -46,13 +46,15 @@ HttpResponse* handel_http_response(const HttpRequest *http_request, const Server
             *response_length = file_size;
         }
 
-        // 6️⃣ Build the HTTP response
+        // building thr response and setting response headers //
         build_http_response(http_response, 200, NULL);
         add_http_response_header(http_response, "Content-Type", mime_type);
         add_http_response_header(http_response, "Content-Length", size_str);
         free(mime_type);
+
+        log_response(http_response);
     } else {
-        // 7️⃣ File not found, return 404 response
+        // returning 404 response if no source is found //
         *response_body = strdup("<h1>404 Not Found</h1><p>The requested resource was not found.</p>");
         *response_length = strlen(*response_body);
         build_http_response(http_response, 404, *response_body);
@@ -64,7 +66,7 @@ HttpResponse* handel_http_response(const HttpRequest *http_request, const Server
 
 
 void send_response(int file_descriptor, const char *headers, const char *body, size_t body_length) {
-    ssize_t total_sent = send(file_descriptor, headers, strlen(headers), 0);
+    const ssize_t total_sent = send(file_descriptor, headers, strlen(headers), 0);
     if (total_sent < 0) {
         log_error("Failed to send HTTP headers");
         return;
