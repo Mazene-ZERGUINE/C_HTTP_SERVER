@@ -18,6 +18,7 @@ void load_routes(const Server *server) {
         }
         last_modified = file_stat.st_mtime;
     } else {
+        printf("%s", routes_file_path);
         log_error("Failed to access app.routes.json. Server shutdown...");
         free(routes_file_path);
         exit(EXIT_FAILURE);

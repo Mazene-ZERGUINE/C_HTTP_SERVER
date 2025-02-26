@@ -34,7 +34,7 @@ typedef struct Server {
  * @param port A string representing the port number.
  * @return int Returns 1 if the port is valid, 0 otherwise.
  */
-int validate_server_port(const char *port);
+int validate_server_port(const int port);
 
 /**
  * @brief Creates and initializes a new Server instance.
@@ -45,7 +45,7 @@ int validate_server_port(const char *port);
  * @param max_connections Maximum number of concurrent connections allowed.
  * @return Server* Pointer to the newly allocated Server structure, or NULL if creation fails.
  */
-Server *create_server(const char *port, int max_connections);
+Server *create_server(const int port, int max_connections);
 
 /**
  * @brief Starts the server.
@@ -76,6 +76,8 @@ void accept_connection(const Server *server);
  * @return int Returns 0 on success, or an error code on failure.
  */
 void stop_server(Server *server);
+
+void run_server(const char *error_ptr, const int port);
 
 
 #endif // SERVER_H

@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include "logger.h"
 
-Server *create_server(const char *port, int max_connections) {
+Server *create_server(const int port, int max_connections) {
     int server_port = validate_server_port(port);
     Server *server = malloc(sizeof(Server));
 
@@ -44,22 +44,15 @@ Server *create_server(const char *port, int max_connections) {
     return server;
 }
 
-int validate_server_port(const char *server_port) {
-    if (server_port == NULL) {
-        log_info("No port specified. Using default port %d.\n", DEFAULT_PORT);
-        return (int) DEFAULT_PORT;
-    }
 
-    errno = 0;
-    char *enp_ptr;
-    long port = strtol(server_port, &enp_ptr, 10);
-
-    if (errno != 0 || *enp_ptr != '\0' || port <= 0 || port > 65535) {
-        log_warn("Invalid port number: %s. Using default port %d.\n", server_port, DEFAULT_PORT);
-        return (int) DEFAULT_PORT;
+int validate_server_port(int server_port) {
+    if (server_port <= 0 || server_port > 65535) {
+        log_warn("Invalid port number: %d. Using default port %d.\n", server_port, DEFAULT_PORT);
+        return DEFAULT_PORT;
     }
-    return (int) port;
+    return server_port;
 }
+
 
 void start_server(Server *server) {
     // binds the server to the selected port or 5400 by default
@@ -80,7 +73,7 @@ void start_server(Server *server) {
     log_info("Server is running on %s and listing on port %d", inet_ntoa(server->server_address.sin_addr),
              ntohs(server->server_address.sin_port));
 
-    log_info("Running application %s Version %s", server->app_config->app_name, server->app_config->app_version);
+    //log_info("Running application %s Version %s", server->app_config->app_name, server->app_config->app_version);
     log_info("Application Path %s", server->app_config->app_resources_path);
     log_info("Debug Mode enabled %d", server->app_config->debug_mode);
 
@@ -108,9 +101,21 @@ void accept_connection(const Server *server) {
     }
 }
 
+void run_server(const char *error_ptr, const int port) {
+    Server *server = create_server(port, MAX_CONNEXIONS);
+    if (server == NULL) {
+        perror(error_ptr);
+        exit(EXIT_FAILURE);
+    }
+
+    start_server(server);
+}
+
 void stop_server(Server *server) {
     if (!server) return;
     close(server->server_file_descriptor);
     free(server);
     log_warn("Server stopped successfully");
 }
+
+

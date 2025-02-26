@@ -9,6 +9,6 @@
 void display_help(void);
 void display_welcome(void);
 void create_app(const char *create_app_command);
-
+void start_app(const char *start_app_command);
 
 #endif //CLI_H

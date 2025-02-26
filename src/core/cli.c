@@ -4,15 +4,16 @@
 
 #include "../../includes/cli.h"
 
+#include <stdbool.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
 #include "config.h"
 #include "logger.h"
+#include "server.h"
 #include "str_utils.h"
 
 void set_assets(void) {
-
 }
 
 #include <stdio.h>
@@ -31,14 +32,14 @@ void set_routing(const char *app_path) {
     }
 
     fprintf(file,
-        "// add some documentation on how to use here\n"
-        "[\n"
-        "    {\n"
-        "        \"path\": \"/home\",\n"
-        "        \"view\": \"/index.html\",\n"
-        "        \"children\": []\n"
-        "    }\n"
-        "]\n"
+            "// add some documentation on how to use here\n"
+            "[\n"
+            "    {\n"
+            "        \"path\": \"/home\",\n"
+            "        \"view\": \"/index.html\",\n"
+            "        \"children\": []\n"
+            "    }\n"
+            "]\n"
     );
 
     fclose(file);
@@ -56,98 +57,98 @@ void set_index(const char *app_path) {
     }
 
     fprintf(file,
-        "<!DOCTYPE html>\n"
-        "<html lang=\"en\">\n"
-        "<head>\n"
-        "    <meta charset=\"UTF-8\">\n"
-        "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-        "    <title>Welcome to PyServe</title>\n"
-        "    <link rel=\"icon\" type=\"image/png\" href=\"./public/favicon.ico\">\n"
-        "    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\">\n"
-        "    <style>\n"
-        "        :root {\n"
-        "            --primary-color: #61dafb;\n"
-        "            --bg-color: #20232a;\n"
-        "            --text-color: #ffffff;\n"
-        "            --card-bg: #282c34;\n"
-        "        }\n"
-        "        body {\n"
-        "            font-family: 'Inter', sans-serif;\n"
-        "            text-align: center;\n"
-        "            margin: 0;\n"
-        "            padding: 0;\n"
-        "            background-color: var(--bg-color);\n"
-        "            color: var(--text-color);\n"
-        "            display: flex;\n"
-        "            justify-content: center;\n"
-        "            align-items: center;\n"
-        "            height: 100vh;\n"
-        "        }\n"
-        "        .container {\n"
-        "            max-width: 1400px;\n"
-        "            padding: 30px;\n"
-        "            background: var(--card-bg);\n"
-        "            border-radius: 12px;\n"
-        "            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);\n"
-        "            text-align: center;\n"
-        "        }\n"
-        "        .logo {\n"
-        "            width: 320px;\n"
-        "        }\n"
-        "        h1 {\n"
-        "            color: var(--primary-color);\n"
-        "            font-size: 32px;\n"
-        "        }\n"
-        "        p {\n"
-        "            font-size: 18px;\n"
-        "            opacity: 0.9;\n"
-        "            margin-bottom: 20px;\n"
-        "        }\n"
-        "        .info {\n"
-        "            background: rgba(255, 255, 255, 0.1);\n"
-        "            padding: 15px;\n"
-        "            border-radius: 8px;\n"
-        "            margin: 20px 0;\n"
-        "        }\n"
-        "        .highlight {\n"
-        "            color: var(--primary-color);\n"
-        "            font-weight: bold;\n"
-        "        }\n"
-        "        .footer {\n"
-        "            margin-top: 20px;\n"
-        "            font-size: 14px;\n"
-        "            opacity: 0.6;\n"
-        "        }\n"
-        "        a {\n"
-        "            color: var(--primary-color);\n"
-        "            text-decoration: none;\n"
-        "            font-weight: bold;\n"
-        "        }\n"
-        "        a:hover {\n"
-        "            text-decoration: underline;\n"
-        "        }\n"
-        "    </style>\n"
-        "</head>\n"
-        "<body>\n"
-        "    <div class=\"container\">\n"
-        "        <img src=\"./public/pyserve.png\" alt=\"PyServe Logo\" class=\"logo\">\n"
-        "        <h1>Welcome to <span class=\"highlight\">PyServe</span></h1>\n"
-        "        <div class=\"info\">\n"
-        "            <p><strong>Server Name:</strong> PyServe</p>\n"
-        "            <p><strong>Current Web App:</strong> <span class=\"highlight\">%APP_NAME%</span></p>\n"
-        "            <p><strong>Serving Path:</strong> <span class=\"highlight\">%WEB_ROOT%</span></p>\n"
-        "        </div>\n"
-        "        <h2>🚀 Getting Started</h2>\n"
-        "        <p>Edit your web files in:</p>\n"
-        "        <p class=\"highlight\">~/Pyserve/apps/%APP_NAME%</p>\n"
-        "        <h2>📄 Need Help?</h2>\n"
-        "        <p>Check out the <a href=\"https://pyserve-docs.example.com\" target=\"_blank\">PyServe Documentation</a></p>\n"
-        "        <div class=\"footer\">\n"
-        "            <p>PyServe - The Lightweight Python HTTP Server | Created with ❤️</p>\n"
-        "        </div>\n"
-        "    </div>\n"
-        "</body>\n"
-        "</html>\n"
+            "<!DOCTYPE html>\n"
+            "<html lang=\"en\">\n"
+            "<head>\n"
+            "    <meta charset=\"UTF-8\">\n"
+            "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+            "    <title>Welcome to PyServe</title>\n"
+            "    <link rel=\"icon\" type=\"image/png\" href=\"./public/favicon.ico\">\n"
+            "    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\">\n"
+            "    <style>\n"
+            "        :root {\n"
+            "            --primary-color: #61dafb;\n"
+            "            --bg-color: #20232a;\n"
+            "            --text-color: #ffffff;\n"
+            "            --card-bg: #282c34;\n"
+            "        }\n"
+            "        body {\n"
+            "            font-family: 'Inter', sans-serif;\n"
+            "            text-align: center;\n"
+            "            margin: 0;\n"
+            "            padding: 0;\n"
+            "            background-color: var(--bg-color);\n"
+            "            color: var(--text-color);\n"
+            "            display: flex;\n"
+            "            justify-content: center;\n"
+            "            align-items: center;\n"
+            "            height: 100vh;\n"
+            "        }\n"
+            "        .container {\n"
+            "            max-width: 1400px;\n"
+            "            padding: 30px;\n"
+            "            background: var(--card-bg);\n"
+            "            border-radius: 12px;\n"
+            "            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);\n"
+            "            text-align: center;\n"
+            "        }\n"
+            "        .logo {\n"
+            "            width: 320px;\n"
+            "        }\n"
+            "        h1 {\n"
+            "            color: var(--primary-color);\n"
+            "            font-size: 32px;\n"
+            "        }\n"
+            "        p {\n"
+            "            font-size: 18px;\n"
+            "            opacity: 0.9;\n"
+            "            margin-bottom: 20px;\n"
+            "        }\n"
+            "        .info {\n"
+            "            background: rgba(255, 255, 255, 0.1);\n"
+            "            padding: 15px;\n"
+            "            border-radius: 8px;\n"
+            "            margin: 20px 0;\n"
+            "        }\n"
+            "        .highlight {\n"
+            "            color: var(--primary-color);\n"
+            "            font-weight: bold;\n"
+            "        }\n"
+            "        .footer {\n"
+            "            margin-top: 20px;\n"
+            "            font-size: 14px;\n"
+            "            opacity: 0.6;\n"
+            "        }\n"
+            "        a {\n"
+            "            color: var(--primary-color);\n"
+            "            text-decoration: none;\n"
+            "            font-weight: bold;\n"
+            "        }\n"
+            "        a:hover {\n"
+            "            text-decoration: underline;\n"
+            "        }\n"
+            "    </style>\n"
+            "</head>\n"
+            "<body>\n"
+            "    <div class=\"container\">\n"
+            "        <img src=\"./public/pyserve.png\" alt=\"PyServe Logo\" class=\"logo\">\n"
+            "        <h1>Welcome to <span class=\"highlight\">PyServe</span></h1>\n"
+            "        <div class=\"info\">\n"
+            "            <p><strong>Server Name:</strong> PyServe</p>\n"
+            "            <p><strong>Current Web App:</strong> <span class=\"highlight\">%APP_NAME%</span></p>\n"
+            "            <p><strong>Serving Path:</strong> <span class=\"highlight\">%WEB_ROOT%</span></p>\n"
+            "        </div>\n"
+            "        <h2>🚀 Getting Started</h2>\n"
+            "        <p>Edit your web files in:</p>\n"
+            "        <p class=\"highlight\">~/Pyserve/apps/%APP_NAME%</p>\n"
+            "        <h2>📄 Need Help?</h2>\n"
+            "        <p>Check out the <a href=\"https://pyserve-docs.example.com\" target=\"_blank\">PyServe Documentation</a></p>\n"
+            "        <div class=\"footer\">\n"
+            "            <p>PyServe - The Lightweight Python HTTP Server | Created with ❤️</p>\n"
+            "        </div>\n"
+            "    </div>\n"
+            "</body>\n"
+            "</html>\n"
     );
 
     fclose(file);
@@ -171,7 +172,8 @@ void display_help(void) {
 
     printf("\033[1;33mAvailable commands:\033[0m\n");
     printf(" \033[1;32mcreate-app\033[0m [app_name]         creates a new application\n");
-    printf(" \033[1;32mstart-app\033[0m [app_name]          runs the server and starts the selected application at port 5400 (default)\n");
+    printf(
+        " \033[1;32mstart-app\033[0m [app_name]          runs the server and starts the selected application at port 5400 (default)\n");
     printf(" \033[1;32mlist-apps\033[0m                     lists all available applications\n");
     printf(" \033[1;32mdelete-app\033[0m [app_name]         deletes the selected application \n");
     printf(" \033[1;32mexit\033[0m                          exits the prompt\n");
@@ -273,15 +275,98 @@ void create_app(const char *create_app_command) {
     free_split(tokens);
 }
 
-void start_app(const char *start_app_command) {
-    int length = 0;
-    char** tokens = str_split(start_app_command, " ", &length);
+bool app_exists(const char *app_name) {
+    char app_path[512];
+    snprintf(app_path, sizeof(app_path), "%s%s", APPS_DIRECTORY, app_name);
 
-    if (!tokens || length < 2) {
-        perror("\033[1;31m❌ Can't start the server (missing app name) try help for more information\033[0m");
-        return;
+    struct stat st;
+    if (stat(app_path, &st) == 0 && S_ISDIR(st.st_mode)) {
+        return true;
     }
-    
+
+    return false;
 }
 
 
+void start_app(const char *start_app_command) {
+    int length = 0;
+
+    char **tokens = str_split(start_app_command, " ", &length);
+
+    if (!tokens || length < 2) {
+        printf("\033[1;31m❌ Can't start the server (missing app name). Try 'help' for more information.\033[0m\n");
+        free_split(tokens);
+        return;
+    }
+
+    if (app_exists(tokens[1]) == false) {
+        printf("\033[1;31m❌ This application does not exist (apps-list) to check for applications.\033[0m\n");
+        free_split(tokens);
+        return;
+    }
+
+    char *app_name = tokens[1];
+    int debug_mode = 0;
+    int app_port = DEFAULT_PORT;
+    char app_version[] = "1.0";
+    char app_path[512];
+    snprintf(app_path, sizeof(app_path), "%s%s", APPS_DIRECTORY, app_name);
+
+    char server_path[512];
+
+    for (int i = 2; i < length; i++) {
+        if (strcmp(tokens[i], "--debug") == 0) {
+            debug_mode = 1;
+        } else if (strcmp(tokens[i], "--port") == 0) {
+            if (i + 1 < length) {
+                int parsed_port = atoi(tokens[i + 1]);
+                if (parsed_port > 0 && parsed_port <= 65535) {
+                    app_port = parsed_port;
+                    i++;
+                } else {
+                    printf("\033[1;31m❌ Invalid port number. Must be between 1 and 65535.\033[0m\n");
+                    free_split(tokens);
+                    return;
+                }
+            } else {
+                printf("\033[1;31m❌ Wrong usage: '--port' requires a port number.\033[0m\n");
+                free_split(tokens);
+                return;
+            }
+        }
+    }
+
+    snprintf(server_path, sizeof(server_path), "http://localhost:%d/%s", app_port, app_name);
+
+    printf("\033[1;32m✅ Starting application: %s\033[0m\n", app_name);
+    printf("\033[1;32m✅ Debug Mode:\033[0m %s\n", debug_mode ? "ON" : "OFF");
+    printf("\033[1;32m✅ Server running at:\033[0m %s\n", server_path);
+
+    FILE *file = fopen(CONFIG_FILE_PATH, "w");
+    if (!file) {
+        perror("\033[1;31m❌ Error opening configuration file\033[0m");
+        free_split(tokens);
+        return;
+    }
+
+    fprintf(file,
+            "app=%s\n"
+            "app_port=%d\n"
+            "app_path=%s\n"
+            "serving_path=%s\n"
+            "app_version=%s\n"
+            "enable_debug=%d\n",
+            app_name, app_port, app_path, server_path, app_version, debug_mode
+    );
+
+
+    fclose(file);
+    printf("\033[1;32m✅ Configuration saved successfully: %s\033[0m\n", CONFIG_FILE_PATH);
+    printf("\n\n");
+    printf("\033[1;33mNext: Use 'start-app %s' to run the server\033[0m\n", app_name);
+
+    const char *error_ptr = NULL;
+    run_server(error_ptr, app_port);
+
+    free_split(tokens);
+}

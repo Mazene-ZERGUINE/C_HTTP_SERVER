@@ -8,16 +8,6 @@
 #include "cli.h"
 #include "str_utils.h"
 
-void run_server(const char *error_ptr, const char *port) {
-    Server *server = create_server(port, MAX_CONNEXIONS);
-    if (server == NULL) {
-        perror(error_ptr);
-        exit(EXIT_FAILURE);
-    }
-
-    start_server(server);
-}
-
 
 int main(void) {
     display_welcome();
@@ -39,10 +29,7 @@ int main(void) {
 
         else if (strstr(command, "start-app")) {
             printf("Start App\n");
-            const char *error_ptr = NULL;
-            const char *port = "5400";
-            run_server(error_ptr, port);
-            return EXIT_SUCCESS;
+            start_app(command);
         }
 
         else if (strstr(command, "delete-app")) {
