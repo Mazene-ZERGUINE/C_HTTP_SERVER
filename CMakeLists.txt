@@ -35,6 +35,8 @@ add_executable(http_server ${SOURCES}
         includes/app_config.h
         src/core/router.c
         includes/router.h
+        src/core/cli.c
+        includes/cli.h
 )
 
 add_custom_command(
