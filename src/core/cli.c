@@ -6,19 +6,42 @@
 
 #include <stdbool.h>
 #include <unistd.h>
+#include <sys/errno.h>
 #include <sys/stat.h>
 
 #include "config.h"
 #include "logger.h"
+#include "memory_utils.h"
 #include "server.h"
 #include "str_utils.h"
 
-void set_assets(void) {
-}
+// TODO: Sets the application assets favicon.ico and the logo when creating apps
+// TODO: Fix the application serving path bug
+// TODO: Fix the html presentation bug issue
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// TODO: Handel concurency and multithreading for requests
+// TODO: Performance optimisations (Rate limiting, Keep-alive, Requests optimisations, Performance becnhMark)
+
+void set_assets(const char *app_path) {
+    char public_dir[512];
+    snprintf(public_dir, sizeof(public_dir), "%s%s", app_path, "/public/");
+
+    if (mkdir(public_dir, 0777) == -1 && errno != EEXIST) {
+        perror("Error creating public directory");
+        return;
+    }
+
+    const char *files[] = {"favicon.ico", "pyserve.png"};
+    for (int i = 0; i < 2; i++) {
+        const char* assets_path = "../../assets/";
+        char src_path[512], dest_path[512];
+
+        snprintf(src_path, sizeof(src_path), "%s%s", assets_path, files[i]);
+        snprintf(dest_path, sizeof(dest_path), "%s%s", public_dir, files[i]);
+
+        copy_file(src_path, dest_path);
+    }
+}
 
 
 void set_routing(const char *app_path) {
@@ -163,6 +186,7 @@ void init_app(const char *app_path) {
 
     set_routing(app_path);
     set_index(app_path);
+    set_assets(app_path);
 }
 
 void display_help(void) {
@@ -336,7 +360,7 @@ void start_app(const char *start_app_command) {
         }
     }
 
-    snprintf(server_path, sizeof(server_path), "http://localhost:%d/%s", app_port, app_name);
+    snprintf(server_path, sizeof(server_path), "http://localhost:%d", app_port);
 
     printf("\033[1;32m✅ Starting application: %s\033[0m\n", app_name);
     printf("\033[1;32m✅ Debug Mode:\033[0m %s\n", debug_mode ? "ON" : "OFF");

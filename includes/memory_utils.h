@@ -19,5 +19,6 @@
  * @param new_size The new size in bytes for the buffer.
  */
 void realloc_buffer(char** buffer, unsigned long new_size);
+void copy_file(const char *src, const char *dest);
 
 #endif // MEMORY_UTILS_H
