@@ -46,46 +46,40 @@ void *app_config_init(void) {
 }
 
 // replace the display placeholders in the default index.html page
-char *replace_placeholders(const char *content, const char *placeholder, const char *replacement) {
-    if (!content || !placeholder || !replacement) return NULL;
+char* replace_placeholders(const char *input, const char *placeholder, const char *replacement) {
+    if (!input || !placeholder || !replacement) return NULL;
 
-    const size_t content_len = strlen(content);
-    const size_t placeholder_len = strlen(placeholder);
+    size_t input_len = strlen(input);
+    size_t placeholder_len = strlen(placeholder);
     size_t replacement_len = strlen(replacement);
 
-    size_t count = 0;
-    const char *pos = content;
-
-    while ((pos = strstr(pos, placeholder)) != NULL) {
+    int count = 0;
+    const char *tmp = input;
+    while ((tmp = strstr(tmp, placeholder)) != NULL) {
         count++;
-        pos += placeholder_len;
+        tmp += placeholder_len;
     }
 
-    if (count == 0) return strdup(content);
+    if (count == 0) return strdup(input);
 
-    const size_t new_size = content_len + (replacement_len - placeholder_len) * count + 1;
-    char *new_content = malloc(new_size);
-    if (!new_content) {
-        log_error("Memory allocation failed for placeholder replacement");
-        return NULL;
+    size_t new_size = input_len + (replacement_len - placeholder_len) * count + 1;
+    char *new_str = malloc(new_size);
+    if (!new_str) return NULL;
+
+    const char *src = input;
+    char *dest = new_str;
+    while ((tmp = strstr(src, placeholder)) != NULL) {
+        // Copy content before the placeholder
+        size_t prefix_len = tmp - src;
+        memcpy(dest, src, prefix_len);
+        dest += prefix_len;
+
+        memcpy(dest, replacement, replacement_len);
+        dest += replacement_len;
+
+        src = tmp + placeholder_len;
     }
+    strcpy(dest, src);
 
-    char *dest = new_content;
-    pos = content;
-    while (*pos) {
-        const char *match = strstr(pos, placeholder);
-        if (match) {
-            size_t segment_len = match - pos;
-            memcpy(dest, pos, segment_len);
-            dest += segment_len;
-            memcpy(dest, replacement, replacement_len);
-            dest += replacement_len;
-            pos = match + placeholder_len;
-        } else {
-            strcpy(dest, pos);
-            break;
-        }
-    }
-
-    return new_content;
+    return new_str;
 }

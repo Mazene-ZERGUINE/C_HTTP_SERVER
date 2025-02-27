@@ -13,7 +13,6 @@ void realloc_buffer(char** buffer, unsigned long new_size) {
 }
 
 void copy_file(const char *src, const char *dest) {
-    printf("Copying %s to %s\n", src, dest);
     FILE *source = fopen(src, "rb");
     if (!source) {
         perror("Error opening source file");

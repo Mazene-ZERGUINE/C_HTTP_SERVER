@@ -14,14 +14,6 @@
 #include "memory_utils.h"
 #include "server.h"
 #include "str_utils.h"
-
-// TODO: Sets the application assets favicon.ico and the logo when creating apps
-// TODO: Fix the application serving path bug
-// TODO: Fix the html presentation bug issue
-
-// TODO: Handel concurency and multithreading for requests
-// TODO: Performance optimisations (Rate limiting, Keep-alive, Requests optimisations, Performance becnhMark)
-
 void set_assets(const char *app_path) {
     char public_dir[512];
     snprintf(public_dir, sizeof(public_dir), "%s%s", app_path, "/public/");
@@ -33,10 +25,9 @@ void set_assets(const char *app_path) {
 
     const char *files[] = {"favicon.ico", "pyserve.png"};
     for (int i = 0; i < 2; i++) {
-        const char* assets_path = "../../assets/";
         char src_path[512], dest_path[512];
 
-        snprintf(src_path, sizeof(src_path), "%s%s", assets_path, files[i]);
+        snprintf(src_path, sizeof(src_path), "%s%s", ASSETS_DIRECTORY, files[i]);
         snprintf(dest_path, sizeof(dest_path), "%s%s", public_dir, files[i]);
 
         copy_file(src_path, dest_path);
@@ -70,112 +61,13 @@ void set_routing(const char *app_path) {
 }
 
 void set_index(const char *app_path) {
-    char file_path[512];
-    snprintf(file_path, sizeof(file_path), "%s/index.html", app_path);
+    char src_path[512];
+    char dest_path[512];
 
-    FILE *file = fopen(file_path, "w");
-    if (!file) {
-        perror("Error while creating index.html");
-        return;
-    }
+    snprintf(src_path, sizeof(src_path), "%s%s", ASSETS_DIRECTORY, "index.html");
+    snprintf(dest_path, sizeof(dest_path), "%s/index.html", app_path);
 
-    fprintf(file,
-            "<!DOCTYPE html>\n"
-            "<html lang=\"en\">\n"
-            "<head>\n"
-            "    <meta charset=\"UTF-8\">\n"
-            "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
-            "    <title>Welcome to PyServe</title>\n"
-            "    <link rel=\"icon\" type=\"image/png\" href=\"./public/favicon.ico\">\n"
-            "    <link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap\">\n"
-            "    <style>\n"
-            "        :root {\n"
-            "            --primary-color: #61dafb;\n"
-            "            --bg-color: #20232a;\n"
-            "            --text-color: #ffffff;\n"
-            "            --card-bg: #282c34;\n"
-            "        }\n"
-            "        body {\n"
-            "            font-family: 'Inter', sans-serif;\n"
-            "            text-align: center;\n"
-            "            margin: 0;\n"
-            "            padding: 0;\n"
-            "            background-color: var(--bg-color);\n"
-            "            color: var(--text-color);\n"
-            "            display: flex;\n"
-            "            justify-content: center;\n"
-            "            align-items: center;\n"
-            "            height: 100vh;\n"
-            "        }\n"
-            "        .container {\n"
-            "            max-width: 1400px;\n"
-            "            padding: 30px;\n"
-            "            background: var(--card-bg);\n"
-            "            border-radius: 12px;\n"
-            "            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);\n"
-            "            text-align: center;\n"
-            "        }\n"
-            "        .logo {\n"
-            "            width: 320px;\n"
-            "        }\n"
-            "        h1 {\n"
-            "            color: var(--primary-color);\n"
-            "            font-size: 32px;\n"
-            "        }\n"
-            "        p {\n"
-            "            font-size: 18px;\n"
-            "            opacity: 0.9;\n"
-            "            margin-bottom: 20px;\n"
-            "        }\n"
-            "        .info {\n"
-            "            background: rgba(255, 255, 255, 0.1);\n"
-            "            padding: 15px;\n"
-            "            border-radius: 8px;\n"
-            "            margin: 20px 0;\n"
-            "        }\n"
-            "        .highlight {\n"
-            "            color: var(--primary-color);\n"
-            "            font-weight: bold;\n"
-            "        }\n"
-            "        .footer {\n"
-            "            margin-top: 20px;\n"
-            "            font-size: 14px;\n"
-            "            opacity: 0.6;\n"
-            "        }\n"
-            "        a {\n"
-            "            color: var(--primary-color);\n"
-            "            text-decoration: none;\n"
-            "            font-weight: bold;\n"
-            "        }\n"
-            "        a:hover {\n"
-            "            text-decoration: underline;\n"
-            "        }\n"
-            "    </style>\n"
-            "</head>\n"
-            "<body>\n"
-            "    <div class=\"container\">\n"
-            "        <img src=\"./public/pyserve.png\" alt=\"PyServe Logo\" class=\"logo\">\n"
-            "        <h1>Welcome to <span class=\"highlight\">PyServe</span></h1>\n"
-            "        <div class=\"info\">\n"
-            "            <p><strong>Server Name:</strong> PyServe</p>\n"
-            "            <p><strong>Current Web App:</strong> <span class=\"highlight\">%APP_NAME%</span></p>\n"
-            "            <p><strong>Serving Path:</strong> <span class=\"highlight\">%WEB_ROOT%</span></p>\n"
-            "        </div>\n"
-            "        <h2>🚀 Getting Started</h2>\n"
-            "        <p>Edit your web files in:</p>\n"
-            "        <p class=\"highlight\">~/Pyserve/apps/%APP_NAME%</p>\n"
-            "        <h2>📄 Need Help?</h2>\n"
-            "        <p>Check out the <a href=\"https://pyserve-docs.example.com\" target=\"_blank\">PyServe Documentation</a></p>\n"
-            "        <div class=\"footer\">\n"
-            "            <p>PyServe - The Lightweight Python HTTP Server | Created with ❤️</p>\n"
-            "        </div>\n"
-            "    </div>\n"
-            "</body>\n"
-            "</html>\n"
-    );
-
-    fclose(file);
-    printf("✅ index.html successfully created at %s\n", file_path);
+    copy_file(src_path, dest_path);
 }
 
 void init_app(const char *app_path) {

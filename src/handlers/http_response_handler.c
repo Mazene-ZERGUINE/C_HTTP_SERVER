@@ -36,8 +36,8 @@ HttpResponse* handel_http_response(const HttpRequest *http_request, const Server
 
         // default index.html settings in case
         if (strcmp(resolved_path, "/index.html") == 0) {
-            char *modified_body = replace_placeholders(*response_body, "%APP_NAME%", server->app_config->app_name);
-            char *final_body = replace_placeholders(modified_body, "%WEB_ROOT%", server->app_config->app_resources_path);
+            char *modified_body = replace_placeholders(*response_body, "{{APP_NAME}}", server->app_config->app_name);
+            char *final_body = replace_placeholders(modified_body, "{{WEB_ROOT}}", server->app_config->app_resources_path);
             free(modified_body);
             free(*response_body);
             *response_body = final_body;
